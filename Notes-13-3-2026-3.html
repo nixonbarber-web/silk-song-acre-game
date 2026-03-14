@@ -1,0 +1,106 @@
+<html>
+        <head><title>Downloaded HTML</title></head>
+        <body>
+            <pre style="white-space: pre-wrap; word-wrap: break-word;"><!DOCTYPE html>
+<html>
+<head>
+<style>
+  :root { --crimson: #cc2e3d; --silk: #fff; --life: #ff4d6d; --void: #7b2cbf; }
+  body { background: #050505; margin: 0; overflow: hidden; font-family: 'Courier New', monospace; color: white; }
+  #world { width: 5000px; height: 100vh; position: relative; transition: transform 0.1s; }
+  .p { width: 30px; height: 35px; background: var(--silk); position: absolute; box-shadow: 0 0 15px var(--silk); z-index: 10; }
+  
+  /* Enemies */
+  .enemy { width: 35px; height: 35px; position: absolute; font-size: 25px; display: flex; align-items: center; justify-content: center; z-index: 5; filter: drop-shadow(0 0 5px var(--void)); }
+  
+  #hud { position: fixed; top: 20px; left: 20px; background: rgba(0,0,0,0.8); padding: 15px; border: 1px solid var(--crimson); z-index: 100; }
+  #hearts { color: var(--life); font-size: 24px; }
+</style>
+</head>
+<body>
+
+<div id="hud">
+  <div id="hearts">❤️❤️❤️❤️❤️</div>
+  <div id="shards-count" style="font-size:12px">SHARDS: 0/4</div>
+</div>
+
+<div id="world">
+  <div id="player" class="p"></div>
+  
+  <!-- Ground Enemy (Patrols) -->
+  <div class="enemy crawler" style="left: 600px; bottom: 0;" data-range="200">🐜</div>
+  
+  <!-- Flying Enemy (Hovering) -->
+  <div class="enemy flyer" style="left: 1200px; bottom: 200px;" data-range="150">🦟</div>
+
+  <!-- Ability & Life Shards -->
+  <div id="item-dash" class="enemy" style="left: 900px; bottom: 50px; background:var(--crimson); border-radius:50%;">☄️</div>
+  <div class="shard life-shard" style="position:absolute; left: 400px; bottom: 100px; color:var(--life)">💖</div>
+</div>
+
+<script>
+  const player = document.getElementById('player');
+  const world = document.getElementById('world');
+  let x = 100, y = 0, vx = 0, vy = 0, hp = 5, maxHp = 5, shards = 0, invuln = 0;
+  let canDash = false, dashing = false;
+
+  window.onkeydown = (e) => {
+    if (e.code === 'KeyA') vx = -8;
+    if (e.code === 'KeyD') vx = 8;
+    if (e.code === 'Space' && y >= 0) vy = -16;
+    if (e.shiftKey && canDash && !dashing) {
+      dashing = true; vx *= 4; setTimeout(() => dashing = false, 150);
+    }
+  };
+  window.onkeyup = () => vx = 0;
+
+  function loop() {
+    if (!dashing) vy += 0.8;
+    x += vx; y += vy;
+    if (y > 0) { y = 0; vy = 0; }
+    if (invuln > 0) invuln--;
+
+    // Enemy AI Movement
+    document.querySelectorAll('.crawler').forEach(e => {
+      let time = Date.now() * 0.002;
+      let range = parseInt(e.dataset.range);
+      e.style.transform = `translateX(${Math.sin(time) * range}px)`;
+      checkDamage(e);
+    });
+
+    document.querySelectorAll('.flyer').forEach(e => {
+      let time = Date.now() * 0.003;
+      let range = parseInt(e.dataset.range);
+      e.style.transform = `translateY(${Math.cos(time) * range}px)`;
+      checkDamage(e);
+    });
+
+    // Handle Dash Unlock
+    const dItem = document.getElementById('item-dash');
+    if (dItem && checkHit(player, dItem)) { canDash = true; dItem.remove(); }
+
+    world.style.transform = `translateX(${-x + 200}px)`;
+    player.style.transform = `translate(${x}px, ${window.innerHeight - 50 + y}px)`;
+    requestAnimationFrame(loop);
+  }
+
+  function checkDamage(enemy) {
+    if (checkHit(player, enemy) && invuln <= 0) {
+      hp--; invuln = 60; x -= 120; // Knockback
+      document.getElementById('hearts').innerText = "❤️".repeat(hp);
+      if (hp <= 0) { x = 100; y = 0; hp = maxHp; document.getElementById('hearts').innerText = "❤️".repeat(hp); }
+    }
+  }
+
+  function checkHit(a, b) {
+    let r1 = a.getBoundingClientRect(), r2 = b.getBoundingClientRect();
+    return !(r1.right < r2.left || r1.left > r2.right || r1.bottom < r2.top || r1.top > r2.bottom);
+  }
+  loop();
+</script>
+</body>
+</html>
+
+</pre>
+        </body>
+    </html>
